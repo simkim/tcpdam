@@ -21,8 +21,11 @@ will lookup REMOTE-HOST then establish and proxy connection to it.
 ## TODO
 
 * harden the code, it's just a prototype
-* add a pidfile
-* trickle read to protect from timeout
-* remove flushed proxy from waiting proxy
-* add logging
-* add test
+  * trickle read to protect from timeout
+  * remove race condition
+  * add test
+* Make it production ready
+  * add logging
+  * add a pidfile
+* Make it configurable
+  * Limit the count of upstream connections
