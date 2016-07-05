@@ -52,6 +52,7 @@ func (dam *Dam) Flush() {
 		fmt.Println("Flush proxy with connection")
 		go proxy.Flush(rconn)
 	}
+	dam.waitingProxies = make([]*Proxy, 0)
 }
 
 func (dam *Dam) ListenSignal() {
