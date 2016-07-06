@@ -30,27 +30,28 @@ func (dam *Dam) NewProxy(lconn *net.TCPConn) *Proxy {
 	return p
 }
 
-func (dam *Dam) Dial() *net.TCPConn {
+func (dam *Dam) Dial() (*net.TCPConn, error) {
 	rconn, err := net.DialTCP("tcp", nil, dam.raddr)
 	if err != nil {
-		panic(err)
+		fmt.Printf("Can't connect to upstream : %s\n", err.Error())
 	}
-	return rconn
+	return rconn, err
 }
 
 func (dam *Dam) Flush() {
-	fmt.Println("Flushing dam")
+	fmt.Println("Flush requested")
+
+	fmt.Printf("Resolving %s\n", *dam.remoteAddr)
 	var err error
 	dam.raddr, err = net.ResolveTCPAddr("tcp", *dam.remoteAddr)
 	if err != nil {
 		fmt.Printf("Can't resolve remote addr %s\n", err.Error())
 		return
 	}
+
+	fmt.Println("Flushing dam")
 	for _, proxy := range dam.waitingProxies {
-		fmt.Println("Dial connection")
-		rconn := dam.Dial()
-		fmt.Println("Flush proxy with connection")
-		go proxy.Flush(rconn)
+		go proxy.Flush()
 	}
 	dam.waitingProxies = make([]*Proxy, 0)
 }
