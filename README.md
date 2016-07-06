@@ -14,9 +14,13 @@
 
 will setup a listening tcp server, when something connect it is parked in a waiting list
 
-    killall -HUP tcpdam
+    killall -USR1 tcpdam
 
-will lookup REMOTE-HOST then establish and proxy connection to it.
+will lookup REMOTE-HOST once, and open the dam : the parked and new connections are proxified to REMOTE-HOST.
+
+    killall -USR2 tcpdam
+
+will re-close the dam and start to park new connections, 
 
 ## TODO
 

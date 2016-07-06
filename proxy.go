@@ -7,34 +7,34 @@ import (
 )
 
 type Proxy struct {
-	lconn, rconn io.ReadWriteCloser
-	dam          *Dam
+	Lconn, Rconn io.ReadWriteCloser
+	Dam          *Dam
 }
 
 func (p *Proxy) Flush() {
 	fmt.Println("Dial connection")
-	rconn, err := p.dam.Dial()
+	Rconn, err := p.Dam.Dial()
 	if err != nil {
 		panic(err)
 	}
-	p.rconn = rconn
+	p.Rconn = Rconn
 
-	defer p.lconn.Close()
-	defer p.rconn.Close()
+	defer p.Lconn.Close()
+	defer p.Rconn.Close()
 
 	var wg sync.WaitGroup
 
 	wg.Add(1)
 	go func() {
-		io.Copy(p.lconn, p.rconn)
-		p.lconn.Close()
+		io.Copy(p.Lconn, p.Rconn)
+		p.Lconn.Close()
 		wg.Done()
 	}()
 
 	wg.Add(1)
 	go func() {
-		io.Copy(p.rconn, p.lconn)
-		p.rconn.Close()
+		io.Copy(p.Rconn, p.Lconn)
+		p.Rconn.Close()
 		wg.Done()
 	}()
 
@@ -43,5 +43,5 @@ func (p *Proxy) Flush() {
 }
 
 func (p *Proxy) Start() {
-	// Should slowly read and buffer lconn to not timeout
+	// Should slowly read and buffer Lconn to not timeout
 }
