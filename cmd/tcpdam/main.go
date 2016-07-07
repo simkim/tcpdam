@@ -15,7 +15,12 @@ var (
 
 func main() {
 	flag.Parse()
+
 	laddr, err := net.ResolveTCPAddr("tcp", *localAddr)
+	if err != nil {
+		panic(err)
+	}
+
 	listener, err := net.ListenTCP("tcp", laddr)
 	if err != nil {
 		panic(err)

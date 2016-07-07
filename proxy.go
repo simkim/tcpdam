@@ -11,15 +11,15 @@ type Proxy struct {
 	Dam          *Dam
 }
 
-func (p *Proxy) Flush() {
+func (p *Proxy) Flush() error {
 	fmt.Println("Dial connection")
+	defer p.Lconn.Close()
 	Rconn, err := p.Dam.Dial()
 	if err != nil {
-		panic(err)
+		return err
 	}
 	p.Rconn = Rconn
 
-	defer p.Lconn.Close()
 	defer p.Rconn.Close()
 
 	var wg sync.WaitGroup
@@ -40,6 +40,7 @@ func (p *Proxy) Flush() {
 
 	wg.Wait()
 	fmt.Println("Flushing done")
+	return nil
 }
 
 func (p *Proxy) Start() {
