@@ -36,7 +36,8 @@ To open the dam
 
 ### Build your tcpdam image
 
-    make docker
+    docker run -v `pwd`/build:/go/bin -v `pwd`:/go/src/github.com/simkim/tcpdam --rm golang go get github.com/simkim/tcpdam/...
+    docker build -t tcpdam .
 
 ## TODO
 
