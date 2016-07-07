@@ -2,7 +2,7 @@
 
 ## Overview
 
-**tcpdam** is a parking proxy for your tcp connection. When your upstream server is ready, send SIGUP to flush connection to the server.
+**tcpdam** is a parking proxy for your tcp connection. When your upstream server is ready, send SIGUSR1 to flush connection to the server.
 
 ## Compilation
 
