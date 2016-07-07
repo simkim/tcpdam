@@ -20,7 +20,23 @@ will lookup REMOTE-HOST once, and open the dam : the parked and new connections 
 
     killall -USR2 tcpdam
 
-will re-close the dam and start to park new connections, 
+will re-close the dam and start to park new connections,
+
+## Docker
+
+### Running
+
+To run the dam
+
+    docker run -p 9999:9999 --r-ti --name hooverdam  simkim/tcpdam tcpdam -r hoover.com:80
+
+To open the dam
+
+    docker exec hooverdam killall -USR1 tcpdam
+
+### Build your tcpdam image
+
+    make docker
 
 ## TODO
 
