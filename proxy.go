@@ -1,18 +1,20 @@
 package tcpdam
 
 import (
-	"fmt"
 	"io"
 	"sync"
+
+	"github.com/op/go-logging"
 )
 
 type Proxy struct {
 	Lconn, Rconn io.ReadWriteCloser
 	Dam          *Dam
+	Logger       *logging.Logger
 }
 
 func (p *Proxy) Flush() error {
-	fmt.Println("Dial connection")
+	p.Logger.Debug("Flush connection")
 	defer p.Lconn.Close()
 	Rconn, err := p.Dam.Dial()
 	if err != nil {
@@ -39,7 +41,7 @@ func (p *Proxy) Flush() error {
 	}()
 
 	wg.Wait()
-	fmt.Println("Flushing done")
+	p.Logger.Debug("Flushing connection done")
 	return nil
 }
 
