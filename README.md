@@ -39,14 +39,3 @@ To open the dam
     docker run -v `pwd`/build:/go/bin -v `pwd`:/go/src/github.com/simkim/tcpdam --rm golang go get github.com/simkim/tcpdam/...
     docker build -t tcpdam .
 
-## TODO
-
-* harden the code, it's just a prototype
-  * trickle read to protect from timeout
-  * remove race condition
-  * add test
-* Make it production ready
-  * add logging
-  * add a pidfile
-* Make it configurable
-  * Limit the count of upstream connections
