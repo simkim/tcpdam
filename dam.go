@@ -152,11 +152,14 @@ func (dam *Dam) WaitEmpty() {
 
 func (dam *Dam) ListenSignal() {
 	dam.sigs = make(chan os.Signal, 1)
-	signal.Notify(dam.sigs, syscall.SIGUSR1, syscall.SIGUSR2, syscall.SIGTERM)
+	signal.Notify(dam.sigs, syscall.SIGUSR1, syscall.SIGUSR2, syscall.SIGTERM, syscall.SIGINT)
 	for {
 		sig := <-dam.sigs
 		switch sig {
 		case syscall.SIGTERM:
+			dam.Open()
+			dam.Stop()
+		case syscall.SIGINT:
 			dam.Open()
 			dam.Stop()
 		case syscall.SIGUSR1:
