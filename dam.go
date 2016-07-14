@@ -6,6 +6,7 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/op/go-logging"
 )
@@ -124,13 +125,21 @@ func (dam *Dam) Start() {
 	defer dam.StopListeningSignal()
 	go dam.ListenSignal()
 	for {
+		delay := time.Duration(1) * time.Second
+		deadline := time.Now().Add(delay)
+		dam.listener.SetDeadline(deadline)
 		conn, err := dam.listener.AcceptTCP()
 		if err != nil {
-			select {
-			case <-dam.quit:
-				dam.Logger.Debug("Received quit -> return")
-				return
-			default:
+			if err, ok := err.(net.Error); ok && err.Timeout() {
+				select {
+				case <-dam.quit:
+					dam.Logger.Debug("Received quit -> return")
+					dam.listener.Close()
+					return
+				default:
+					continue
+				}
+			} else {
 				panic(err)
 			}
 		}
@@ -144,7 +153,6 @@ func (dam *Dam) Start() {
 func (dam *Dam) Stop() {
 	dam.Logger.Info("Stop requested")
 	dam.quit <- true
-	dam.listener.Close()
 }
 
 func (dam *Dam) WaitEmpty() {
