@@ -22,21 +22,38 @@ will lookup REMOTE-HOST once, and open the dam : the parked and new connections 
 
 will re-close the dam and start to park new connections,
 
+## Configuration
+
+### Environment variables
+* TCPDAM_LISTEN_ADDRESS
+* TCPDAM_REMOTE_ADDRESS
+* TCPDAM_DEBUG
+* TCPDAM_VERBOSE
+* TCPDAM_PIDFILE
+
+### Command line switch
+* -l
+* -h
+* -d
+* -v
+* -p
+* -max-parked
+
 ## Docker
 
 ### From the hub
 
 To run the dam
 
-    docker run -p 9999:9999 --rm -ti --name hooverdam  simkim/tcpdam tcpdam -r hoover.com:80
+    docker run -p 9999:9999 --rm -ti --name tcpdam_test  simkim/tcpdam tcpdam -r google.com:80
 
 To open the dam
 
-    docker exec hooverdam killall -USR1 tcpdam
+    docker exec tcpdam_test killall -USR1 tcpdam
 
 To open the dam, wait for connections to terminate and quit
 
-    docker stop hooverdam
+    docker stop tcpdam_test
 
 ### From local build
 

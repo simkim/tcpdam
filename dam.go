@@ -13,7 +13,7 @@ import (
 type Dam struct {
 	MaxParkedProxies  int
 	open              bool
-	localAddr         *string
+	listenAddr        *string
 	remoteAddr        *string
 	raddr             *net.TCPAddr
 	listener          *net.TCPListener
@@ -26,12 +26,12 @@ type Dam struct {
 	Logger            *logging.Logger
 }
 
-func NewDam(localAddr *string, remoteAddr *string) *Dam {
+func NewDam(listenAddr *string, remoteAddr *string) *Dam {
 	mutex := &sync.Mutex{}
 	return &Dam{
 		MaxParkedProxies:  0,
 		open:              false,
-		localAddr:         localAddr,
+		listenAddr:        listenAddr,
 		remoteAddr:        remoteAddr,
 		parkedProxies:     make([]*Proxy, 0),
 		parkedProxiesLock: mutex,
@@ -111,7 +111,7 @@ func (dam *Dam) Flush() {
 }
 
 func (dam *Dam) Start() {
-	laddr, err := net.ResolveTCPAddr("tcp", *dam.localAddr)
+	laddr, err := net.ResolveTCPAddr("tcp", *dam.listenAddr)
 	if err != nil {
 		panic(err)
 	}

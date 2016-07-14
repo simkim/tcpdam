@@ -2,4 +2,6 @@ app:
   build: .
   ports:
     - "9999:9999"
-  command: "tcpdam -r localhost:80 -d"
+  environment:
+    TCPDAM_REMOTE_ADDRESS: "localhost:80"
+    TCPDAM_DEBUG: "1"

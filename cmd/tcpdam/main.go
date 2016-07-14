@@ -9,13 +9,34 @@ import (
 	"github.com/simkim/tcpdam"
 )
 
+func configFromEnv(key string, _default string) string {
+	if os.Getenv(key) != "" {
+		return os.Getenv(key)
+	} else {
+		return _default
+	}
+}
+
+func configFromEnvBool(key string, _default bool) bool {
+	if os.Getenv(key) != "" {
+		rc, err := strconv.ParseBool(os.Getenv(key))
+		if err != nil {
+			log.Warning("Invalid value %s in env var %s", os.Getenv(key), key)
+			return _default
+		}
+		return rc
+	} else {
+		return _default
+	}
+}
+
 var (
-	localAddr        = flag.String("l", ":9999", "local address")
-	remoteAddr       = flag.String("r", "127.0.0.1:80", "remote address")
+	listenAddr       = flag.String("l", configFromEnv("TCPDAM_LISTEN_ADDRESS", ":9999"), "listen address (TCPDAM_LISTEN_ADDRESS)")
+	remoteAddr       = flag.String("r", configFromEnv("TCPDAM_REMOTE_ADDRESS", "127.0.0.1:80"), "remote address (TCPDAM_REMOTE_ADDRESS)")
 	maxParkedProxies = flag.Int("max-parked", 0, "maximum parked connections")
-	verbose          = flag.Bool("v", false, "show major events like open/close")
-	debug            = flag.Bool("d", false, "show all debug events")
-	pidFile          = flag.String("p", "", "pid file")
+	verbose          = flag.Bool("v", configFromEnvBool("TCPDAM_VERBOSE", false), "show major events like open/close (TCPDAM_VERBOSE)")
+	debug            = flag.Bool("d", configFromEnvBool("TCPDAM_DEBUG", false), "show all debug events (TCPDAM_DEBUG)")
+	pidFile          = flag.String("p", configFromEnv("TCPDAM_PIDFILE", ""), "pid file (TCPDAM_PIDFILE)")
 )
 
 func setupLogging() {
@@ -74,8 +95,8 @@ func main() {
 			defer teardownPidfile()
 		}
 	}
-	log.Notice("tcpdam started")
-	dam := tcpdam.NewDam(localAddr, remoteAddr)
+	log.Noticef("tcpdam started (%s -> %s)", *listenAddr, *remoteAddr)
+	dam := tcpdam.NewDam(listenAddr, remoteAddr)
 	dam.Logger = log
 	dam.MaxParkedProxies = *maxParkedProxies
 	dam.Start()
