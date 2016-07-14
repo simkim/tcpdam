@@ -24,18 +24,24 @@ will re-close the dam and start to park new connections,
 
 ## Docker
 
-### Running
+### From the hub
 
 To run the dam
 
-    docker run -p 9999:9999 --r-ti --name hooverdam  simkim/tcpdam tcpdam -r hoover.com:80
+    docker run -p 9999:9999 --rm -ti --name hooverdam  simkim/tcpdam tcpdam -r hoover.com:80
 
 To open the dam
 
     docker exec hooverdam killall -USR1 tcpdam
 
-### Build your tcpdam image
+To open the dam, wait for connections to terminate and quit
+
+    docker stop hooverdam
+
+### From local build
+
+    Edit docker-compose.yml
 
     docker run -v `pwd`/build:/go/bin -v `pwd`:/go/src/github.com/simkim/tcpdam --rm golang go get github.com/simkim/tcpdam/...
-    docker build -t tcpdam .
-
+    docker-compose build
+    docker-compose up
