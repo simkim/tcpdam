@@ -164,18 +164,13 @@ func (dam *Dam) ListenSignal() {
 	for {
 		sig := <-dam.sigs
 		switch sig {
-		case syscall.SIGTERM:
-			dam.Open()
-			dam.Stop()
-		case syscall.SIGINT:
+		case syscall.SIGTERM, syscall.SIGINT:
 			dam.Open()
 			dam.Stop()
 		case syscall.SIGUSR1:
 			dam.Open()
-			break
 		case syscall.SIGUSR2:
 			dam.Close()
-			break
 		}
 	}
 }
