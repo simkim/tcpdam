@@ -14,29 +14,26 @@ import (
 type Dam struct {
 	MaxParkedProxies  int
 	open              bool
-	listenAddr        *string
-	remoteAddr        *string
+	listenAddr        string
+	remoteAddr        string
 	raddr             *net.TCPAddr
 	listener          *net.TCPListener
-	parkedProxies     []*Proxy
-	parkedProxiesLock *sync.Mutex
-	parkedProxiesCond *sync.Cond
+	parkedProxies     chan *Proxy
+	flushingProxies		chan bool
 	shouldQuitCond    sync.Cond
 	quit              chan bool
 	sigs              chan os.Signal
 	Logger            *logging.Logger
 }
 
-func NewDam(listenAddr *string, remoteAddr *string) *Dam {
-	mutex := &sync.Mutex{}
+func NewDam(listenAddr string, remoteAddr string, maxParked int) *Dam {
 	return &Dam{
 		MaxParkedProxies:  0,
 		open:              false,
 		listenAddr:        listenAddr,
 		remoteAddr:        remoteAddr,
-		parkedProxies:     make([]*Proxy, 0),
-		parkedProxiesLock: mutex,
-		parkedProxiesCond: sync.NewCond(mutex),
+		parkedProxies:     make(chan *Proxy, maxParked),
+		flushingProxies:	 make(chan bool, 10), //FIXME: update buffer size once the flush algorithm is known
 		Logger:            logging.MustGetLogger("dam"),
 		shouldQuitCond:    sync.Cond{L: &sync.Mutex{}},
 	}
@@ -50,23 +47,21 @@ func (dam *Dam) Dial() (*net.TCPConn, error) {
 	return rconn, err
 }
 
+func (dam *Dam) Flushed(p *Proxy) {
+		<- dam.flushingProxies
+}
+
 func (dam *Dam) Push(p *Proxy) {
 	p.Dam = dam
 	p.Logger = dam.Logger
 
-	dam.parkedProxiesLock.Lock()
-
-	for !dam.open && dam.MaxParkedProxies != 0 && len(dam.parkedProxies) >= dam.MaxParkedProxies {
-		dam.Logger.Debugf("Too many connections, waiting free slots : %d >= %d\n", len(dam.parkedProxies), dam.MaxParkedProxies)
-		dam.parkedProxiesCond.Wait()
-	}
-
 	if dam.open {
+		dam.flushingProxies <- true
 		go p.Flush()
 	} else {
-		dam.parkedProxies = append(dam.parkedProxies, p)
+		dam.parkedProxies <- p
 	}
-	dam.parkedProxiesLock.Unlock()
+
 }
 
 func (dam *Dam) Close() {
@@ -80,12 +75,12 @@ func (dam *Dam) Close() {
 
 func (dam *Dam) Open() error {
 	if dam.open {
-		dam.Logger.Debugf("Already opened")
+		dam.Logger.Debug("Already opened")
 		return nil
 	}
-	dam.Logger.Debugf("Resolving %s\n", *dam.remoteAddr)
+	dam.Logger.Debugf("Resolving %s\n", dam.remoteAddr)
 	var err error
-	dam.raddr, err = net.ResolveTCPAddr("tcp", *dam.remoteAddr)
+	dam.raddr, err = net.ResolveTCPAddr("tcp", dam.remoteAddr)
 	if err != nil {
 		dam.Logger.Warningf("Can't resolve remote addr %s\n", err.Error())
 		return err
@@ -100,26 +95,31 @@ func (dam *Dam) Open() error {
 func (dam *Dam) Flush() {
 	dam.Logger.Debug("Flushing dam requested")
 
-	dam.parkedProxiesLock.Lock()
-	dam.Logger.Debug("Flushing dam")
-	for _, proxy := range dam.parkedProxies {
-		go proxy.Flush()
+	for {
+		dam.Logger.Debug("Flushing dam ...")
+		select {
+			case p := <- dam.parkedProxies:
+				dam.flushingProxies <- true
+				go p.Flush()
+			default:
+				goto end
+		}
 	}
-	dam.parkedProxies = make([]*Proxy, 0)
-	dam.parkedProxiesLock.Unlock()
-
-	dam.parkedProxiesCond.Broadcast()
+	end:
+		dam.Logger.Debug("Flushing dam done")
 }
 
-func (dam *Dam) Start() {
-	laddr, err := net.ResolveTCPAddr("tcp", *dam.listenAddr)
+func (dam *Dam) Start() error {
+	laddr, err := net.ResolveTCPAddr("tcp", dam.listenAddr)
 	if err != nil {
-		panic(err)
+		dam.Logger.Errorf("Can't resolve listen address: %s", err.Error())
+		return err
 	}
 
 	dam.listener, err = net.ListenTCP("tcp", laddr)
 	if err != nil {
-		panic(err)
+		dam.Logger.Errorf("Can't listen: %s", err.Error())
+		return err
 	}
 	dam.quit = make(chan bool, 1)
 	defer dam.StopListeningSignal()
@@ -135,12 +135,13 @@ func (dam *Dam) Start() {
 				case <-dam.quit:
 					dam.Logger.Debug("Received quit -> return")
 					dam.listener.Close()
-					return
+					dam.waitEmpty()
+					return nil
 				default:
 					continue
 				}
 			} else {
-				panic(err)
+				return err
 			}
 		}
 		p := &Proxy{
@@ -155,7 +156,13 @@ func (dam *Dam) Stop() {
 	dam.quit <- true
 }
 
-func (dam *Dam) WaitEmpty() {
+func (dam *Dam) waitEmpty() {
+	dam.Logger.Debug("Wait the dam to become empty")
+	for len(dam.flushingProxies) > 0 {
+		dam.Logger.Debug("Wait the dam to become empty loop")
+		time.Sleep(1*time.Second)
+	}
+	dam.Logger.Debug("Wait the dam to become empty loop done")
 }
 
 func (dam *Dam) ListenSignal() {

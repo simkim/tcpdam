@@ -12,9 +12,8 @@ import (
 func configFromEnv(key string, _default string) string {
 	if os.Getenv(key) != "" {
 		return os.Getenv(key)
-	} else {
-		return _default
 	}
+	return _default
 }
 
 func configFromEnvBool(key string, _default bool) bool {
@@ -25,9 +24,8 @@ func configFromEnvBool(key string, _default bool) bool {
 			return _default
 		}
 		return rc
-	} else {
-		return _default
 	}
+	return _default
 }
 
 var (
@@ -66,19 +64,19 @@ func teardownPidfile() error {
 	return err
 }
 
-func setupPidfile() (error, bool) {
+func setupPidfile() (bool, error) {
 	if *pidFile == "" {
-		return nil, false
+		return false, nil
 	}
 	file, err := os.OpenFile(*pidFile, os.O_CREATE|os.O_EXCL|os.O_WRONLY|os.O_TRUNC, 0777)
 	if err != nil {
-		return err, false
+		return false, err
 	}
 	pid := os.Getpid()
 	log.Debugf("Write pid %d to pidfile %s\n", pid, *pidFile)
 	file.Write([]byte(strconv.Itoa(pid)))
 	file.Close()
-	return nil, true
+	return true, nil
 }
 
 var log = logging.MustGetLogger("tcpdam")
@@ -86,7 +84,7 @@ var log = logging.MustGetLogger("tcpdam")
 func main() {
 	flag.Parse()
 	setupLogging()
-	err, hasPid := setupPidfile()
+	hasPid, err := setupPidfile()
 	if err != nil {
 		log.Errorf("Can't create pid file : %s\n", err.Error())
 		os.Exit(1)
@@ -96,9 +94,11 @@ func main() {
 		}
 	}
 	log.Noticef("tcpdam started (%s -> %s)", *listenAddr, *remoteAddr)
-	dam := tcpdam.NewDam(listenAddr, remoteAddr)
+	dam := tcpdam.NewDam(*listenAddr, *remoteAddr, *maxParkedProxies)
 	dam.Logger = log
-	dam.MaxParkedProxies = *maxParkedProxies
-	dam.Start()
+	err = dam.Start()
+	if err != nil {
+		log.Errorf("An error occured: %s", err.Error())
+	}
 	log.Notice("tcpdam stopped")
 }

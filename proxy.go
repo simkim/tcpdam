@@ -16,6 +16,7 @@ type Proxy struct {
 func (p *Proxy) Flush() error {
 	p.Logger.Debug("Flush connection")
 	defer p.Lconn.Close()
+	defer p.Dam.Flushed(p)
 	Rconn, err := p.Dam.Dial()
 	if err != nil {
 		return err
