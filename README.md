@@ -42,6 +42,16 @@ will re-close the dam and start to park new connections,
 * -max-parked
 * -max-flushing
 
+## Limits
+
+### Open file descriptors
+
+You need to configure your maximum number of file descriptor to allow a high number of parked connections
+
+ * debian  : configure /etc/security/limits.conf
+ * docker  : docker run --ulimit nofile=100000:100000
+ * compose : see docker-compose.yml
+
 ## Docker
 
 ### From the hub
