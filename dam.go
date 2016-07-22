@@ -48,7 +48,7 @@ func (dam *Dam) Dial() (*net.TCPConn, error) {
 }
 
 func (dam *Dam) Flushed(p *Proxy) {
-		<- dam.flushingProxies
+	<-dam.flushingProxies
 }
 
 func (dam *Dam) Push(p *Proxy) {
@@ -98,15 +98,15 @@ func (dam *Dam) Flush() {
 	for {
 		dam.Logger.Debug("Flushing dam ...")
 		select {
-			case p := <- dam.parkedProxies:
-				dam.flushingProxies <- true
-				go p.Flush()
-			default:
-				goto end
+		case p := <-dam.parkedProxies:
+			dam.flushingProxies <- true
+			go p.Flush()
+		default:
+			goto end
 		}
 	}
-	end:
-		dam.Logger.Debug("Flushing dam done")
+end:
+	dam.Logger.Debug("Flushing dam done")
 }
 
 func (dam *Dam) Start() error {
@@ -160,7 +160,7 @@ func (dam *Dam) waitEmpty() {
 	dam.Logger.Debug("Wait the dam to become empty")
 	for len(dam.flushingProxies) > 0 {
 		dam.Logger.Debug("Wait the dam to become empty loop")
-		time.Sleep(1*time.Second)
+		time.Sleep(1 * time.Second)
 	}
 	dam.Logger.Debug("Wait the dam to become empty loop done")
 }
