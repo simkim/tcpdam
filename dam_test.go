@@ -11,14 +11,14 @@ var (
 )
 
 func TestCreateDam(t *testing.T) {
-	dam := tcpdam.NewDam(la, ra)
+	dam := tcpdam.NewDam(la, ra, 1, 1)
 	if dam == nil {
 		t.Errorf("Dam should not be nil")
 	}
 }
 
 func TestOpeningDam(t *testing.T) {
-	dam := tcpdam.NewDam(la, ra)
+	dam := tcpdam.NewDam(la, ra, 1, 1)
 	if dam == nil {
 		t.Errorf("Dam should not be nil")
 	}

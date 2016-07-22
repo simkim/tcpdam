@@ -30,6 +30,8 @@ will re-close the dam and start to park new connections,
 * TCPDAM_DEBUG
 * TCPDAM_VERBOSE
 * TCPDAM_PIDFILE
+* TCPDAM_MAX_FLUSHING
+* TCPDAM_MAX_PARKED
 
 ### Command line switch
 * -l
@@ -38,6 +40,7 @@ will re-close the dam and start to park new connections,
 * -v
 * -p
 * -max-parked
+* -max-flushing
 
 ## Docker
 

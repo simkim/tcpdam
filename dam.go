@@ -4,7 +4,6 @@ import (
 	"net"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
 	"time"
 
@@ -12,30 +11,26 @@ import (
 )
 
 type Dam struct {
-	MaxParkedProxies  int
-	open              bool
-	listenAddr        string
-	remoteAddr        string
-	raddr             *net.TCPAddr
-	listener          *net.TCPListener
-	parkedProxies     chan *Proxy
-	flushingProxies		chan bool
-	shouldQuitCond    sync.Cond
-	quit              chan bool
-	sigs              chan os.Signal
-	Logger            *logging.Logger
+	open            bool
+	listenAddr      string
+	remoteAddr      string
+	raddr           *net.TCPAddr
+	listener        *net.TCPListener
+	parkedProxies   chan *Proxy
+	flushingProxies chan bool
+	quit            chan bool
+	sigs            chan os.Signal
+	Logger          *logging.Logger
 }
 
-func NewDam(listenAddr string, remoteAddr string, maxParked int) *Dam {
+func NewDam(listenAddr string, remoteAddr string, maxParked int, maxFlushing int) *Dam {
 	return &Dam{
-		MaxParkedProxies:  0,
-		open:              false,
-		listenAddr:        listenAddr,
-		remoteAddr:        remoteAddr,
-		parkedProxies:     make(chan *Proxy, maxParked),
-		flushingProxies:	 make(chan bool, 10), //FIXME: update buffer size once the flush algorithm is known
-		Logger:            logging.MustGetLogger("dam"),
-		shouldQuitCond:    sync.Cond{L: &sync.Mutex{}},
+		open:            false,
+		listenAddr:      listenAddr,
+		remoteAddr:      remoteAddr,
+		parkedProxies:   make(chan *Proxy, maxParked),
+		flushingProxies: make(chan bool, maxFlushing), //FIXME: update buffer size once the flush algorithm is known
+		Logger:          logging.MustGetLogger("dam"),
 	}
 }
 

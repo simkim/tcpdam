@@ -3,5 +3,6 @@ app:
   ports:
     - "9999:9999"
   environment:
-    TCPDAM_REMOTE_ADDRESS: "localhost:80"
+    TCPDAM_REMOTE_ADDRESS: "httpbin.com:80"
     TCPDAM_DEBUG: "1"
+    TCPDAM_MAX_FLUSHING: "1"

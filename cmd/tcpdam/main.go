@@ -16,6 +16,18 @@ func configFromEnv(key string, _default string) string {
 	return _default
 }
 
+func configFromEnvInt(key string, _default int) int {
+	if os.Getenv(key) != "" {
+		rc, err := strconv.Atoi(os.Getenv(key))
+		if err != nil {
+			log.Warning("Invalid value %s in env var %s", os.Getenv(key), key)
+			return _default
+		}
+		return rc
+	}
+	return _default
+}
+
 func configFromEnvBool(key string, _default bool) bool {
 	if os.Getenv(key) != "" {
 		rc, err := strconv.ParseBool(os.Getenv(key))
@@ -29,12 +41,13 @@ func configFromEnvBool(key string, _default bool) bool {
 }
 
 var (
-	listenAddr       = flag.String("l", configFromEnv("TCPDAM_LISTEN_ADDRESS", ":9999"), "listen address (TCPDAM_LISTEN_ADDRESS)")
-	remoteAddr       = flag.String("r", configFromEnv("TCPDAM_REMOTE_ADDRESS", "127.0.0.1:80"), "remote address (TCPDAM_REMOTE_ADDRESS)")
-	maxParkedProxies = flag.Int("max-parked", 0, "maximum parked connections")
-	verbose          = flag.Bool("v", configFromEnvBool("TCPDAM_VERBOSE", false), "show major events like open/close (TCPDAM_VERBOSE)")
-	debug            = flag.Bool("d", configFromEnvBool("TCPDAM_DEBUG", false), "show all debug events (TCPDAM_DEBUG)")
-	pidFile          = flag.String("p", configFromEnv("TCPDAM_PIDFILE", ""), "pid file (TCPDAM_PIDFILE)")
+	listenAddr         = flag.String("l", configFromEnv("TCPDAM_LISTEN_ADDRESS", ":9999"), "listen address (TCPDAM_LISTEN_ADDRESS)")
+	remoteAddr         = flag.String("r", configFromEnv("TCPDAM_REMOTE_ADDRESS", "127.0.0.1:80"), "remote address (TCPDAM_REMOTE_ADDRESS)")
+	maxParkedProxies   = flag.Int("max-parked", configFromEnvInt("TCPDAM_MAX_PARKED", 0), "maximum parked connections")
+	maxFlushingProxies = flag.Int("max-flushing", configFromEnvInt("TCPDAM_MAX_FLUSHING", 10), "maximum flushing connections")
+	verbose            = flag.Bool("v", configFromEnvBool("TCPDAM_VERBOSE", false), "show major events like open/close (TCPDAM_VERBOSE)")
+	debug              = flag.Bool("d", configFromEnvBool("TCPDAM_DEBUG", false), "show all debug events (TCPDAM_DEBUG)")
+	pidFile            = flag.String("p", configFromEnv("TCPDAM_PIDFILE", ""), "pid file (TCPDAM_PIDFILE)")
 )
 
 func setupLogging() {
@@ -94,7 +107,7 @@ func main() {
 		}
 	}
 	log.Noticef("tcpdam started (%s -> %s)", *listenAddr, *remoteAddr)
-	dam := tcpdam.NewDam(*listenAddr, *remoteAddr, *maxParkedProxies)
+	dam := tcpdam.NewDam(*listenAddr, *remoteAddr, *maxParkedProxies, *maxFlushingProxies)
 	dam.Logger = log
 	err = dam.Start()
 	if err != nil {
