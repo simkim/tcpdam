@@ -92,11 +92,11 @@ func (dam *Dam) Flush() {
 	for {
 		dam.Logger.Debug("Flushing dam ...")
 		select {
+		case <-dam.close:
+			goto end
 		case p := <-dam.parkedProxies:
 			dam.flushingProxies <- true
 			go p.Flush()
-		case <-dam.close:
-			goto end
 		}
 	}
 end:
