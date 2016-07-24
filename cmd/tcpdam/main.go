@@ -43,7 +43,7 @@ func configFromEnvBool(key string, _default bool) bool {
 var (
 	listenAddr         = flag.String("l", configFromEnv("TCPDAM_LISTEN_ADDRESS", ":9999"), "listen address (TCPDAM_LISTEN_ADDRESS)")
 	remoteAddr         = flag.String("r", configFromEnv("TCPDAM_REMOTE_ADDRESS", "127.0.0.1:80"), "remote address (TCPDAM_REMOTE_ADDRESS)")
-	maxParkedProxies   = flag.Int("max-parked", configFromEnvInt("TCPDAM_MAX_PARKED", 0), "maximum parked connections")
+	maxParkedProxies   = flag.Int("max-parked", configFromEnvInt("TCPDAM_MAX_PARKED", 100000), "maximum parked connections")
 	maxFlushingProxies = flag.Int("max-flushing", configFromEnvInt("TCPDAM_MAX_FLUSHING", 10), "maximum flushing connections")
 	verbose            = flag.Bool("v", configFromEnvBool("TCPDAM_VERBOSE", false), "show major events like open/close (TCPDAM_VERBOSE)")
 	debug              = flag.Bool("d", configFromEnvBool("TCPDAM_DEBUG", false), "show all debug events (TCPDAM_DEBUG)")
