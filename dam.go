@@ -18,6 +18,7 @@ type Dam struct {
 	listener        *net.TCPListener
 	parkedProxies   chan *Proxy
 	flushingProxies chan bool
+	close           chan bool
 	quit            chan bool
 	sigs            chan os.Signal
 	Logger          *logging.Logger
@@ -29,7 +30,8 @@ func NewDam(listenAddr string, remoteAddr string, maxParked int, maxFlushing int
 		listenAddr:      listenAddr,
 		remoteAddr:      remoteAddr,
 		parkedProxies:   make(chan *Proxy, maxParked),
-		flushingProxies: make(chan bool, maxFlushing), //FIXME: update buffer size once the flush algorithm is known
+		flushingProxies: make(chan bool, maxFlushing),
+		close:           make(chan bool),
 		Logger:          logging.MustGetLogger("dam"),
 	}
 }
@@ -46,17 +48,13 @@ func (dam *Dam) Flushed(p *Proxy) {
 	<-dam.flushingProxies
 }
 
-func (dam *Dam) Push(p *Proxy) {
-	p.Dam = dam
-	p.Logger = dam.Logger
-
-	if dam.open {
-		dam.flushingProxies <- true
-		go p.Flush()
-	} else {
-		dam.parkedProxies <- p
+func (dam *Dam) Push(conn *net.TCPConn) {
+	p := &Proxy{
+		Lconn:  conn,
+		Dam:    dam,
+		Logger: dam.Logger,
 	}
-
+	dam.parkedProxies <- p
 }
 
 func (dam *Dam) Close() {
@@ -65,6 +63,7 @@ func (dam *Dam) Close() {
 		return
 	}
 	dam.open = false
+	dam.close <- true
 	dam.Logger.Notice("Close dam")
 }
 
@@ -83,7 +82,7 @@ func (dam *Dam) Open() error {
 
 	dam.Logger.Notice("Open dam")
 	dam.open = true
-	dam.Flush()
+	go dam.Flush()
 	return nil
 }
 
@@ -96,7 +95,7 @@ func (dam *Dam) Flush() {
 		case p := <-dam.parkedProxies:
 			dam.flushingProxies <- true
 			go p.Flush()
-		default:
+		case <-dam.close:
 			goto end
 		}
 	}
@@ -139,10 +138,7 @@ func (dam *Dam) Start() error {
 				return err
 			}
 		}
-		p := &Proxy{
-			Lconn: conn,
-		}
-		dam.Push(p)
+		dam.Push(conn)
 	}
 }
 
