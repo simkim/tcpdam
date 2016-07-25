@@ -52,6 +52,14 @@ You need to configure your maximum number of file descriptor to allow a high num
  * docker  : docker run --ulimit nofile=100000:100000
  * compose : see docker-compose.yml
 
+### netfilter conntrack size
+
+TODO
+
+### tcp TIME_WAIT
+
+TODO
+
 ## Docker
 
 ### From the hub
