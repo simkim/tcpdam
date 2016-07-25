@@ -80,7 +80,7 @@ func (dam *Dam) Open() error {
 		return err
 	}
 
-	dam.Logger.Notice("Open dam")
+	dam.Logger.Noticef("Open dam (%d parked)", len(dam.parkedProxies))
 	dam.open = true
 	go dam.Flush()
 	return nil
