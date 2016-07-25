@@ -103,7 +103,7 @@ end:
 	dam.Logger.Debug("Flushing dam done")
 }
 
-func (dam *Dam) Start() error {
+func (dam *Dam) Start(open bool) error {
 	laddr, err := net.ResolveTCPAddr("tcp", dam.listenAddr)
 	if err != nil {
 		dam.Logger.Errorf("Can't resolve listen address: %s", err.Error())
@@ -118,6 +118,9 @@ func (dam *Dam) Start() error {
 	dam.quit = make(chan bool, 1)
 	defer dam.StopListeningSignal()
 	go dam.ListenSignal()
+	if open {
+		dam.Open()
+	}
 	for {
 		delay := time.Duration(1) * time.Second
 		deadline := time.Now().Add(delay)

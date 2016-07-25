@@ -48,6 +48,7 @@ var (
 	verbose            = flag.Bool("v", configFromEnvBool("TCPDAM_VERBOSE", false), "show major events like open/close (TCPDAM_VERBOSE)")
 	debug              = flag.Bool("d", configFromEnvBool("TCPDAM_DEBUG", false), "show all debug events (TCPDAM_DEBUG)")
 	pidFile            = flag.String("p", configFromEnv("TCPDAM_PIDFILE", ""), "pid file (TCPDAM_PIDFILE)")
+	open               = flag.Bool("open", configFromEnvBool("TCPDAM_OPEN", false), "start already open (TCPDAM_OPEN)")
 )
 
 func setupLogging() {
@@ -109,7 +110,7 @@ func main() {
 	log.Noticef("tcpdam started (%s -> %s)", *listenAddr, *remoteAddr)
 	dam := tcpdam.NewDam(*listenAddr, *remoteAddr, *maxParkedProxies, *maxFlushingProxies)
 	dam.Logger = log
-	err = dam.Start()
+	err = dam.Start(*open)
 	if err != nil {
 		log.Errorf("An error occured: %s", err.Error())
 	}

@@ -32,6 +32,7 @@ will re-close the dam and start to park new connections,
 * TCPDAM_PIDFILE
 * TCPDAM_MAX_FLUSHING
 * TCPDAM_MAX_PARKED
+* TCPDAM_OPEN
 
 ### Command line switch
 * -l
@@ -41,6 +42,7 @@ will re-close the dam and start to park new connections,
 * -p
 * -max-parked
 * -max-flushing
+* -open
 
 ## Limits
 
