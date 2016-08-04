@@ -50,6 +50,7 @@ var (
 	pidFile            = flag.String("p", configFromEnv("TCPDAM_PIDFILE", ""), "pid file (TCPDAM_PIDFILE)")
 	ctrlSocket         = flag.String("ctrl-socket", configFromEnv("TCPDAM_CTRLSOCKET", ""), "control socket (TCPDAM_CTRLSOCKET)")
 	open               = flag.Bool("open", configFromEnvBool("TCPDAM_OPEN", false), "start already open (TCPDAM_OPEN)")
+	command            = flag.String("c", "", "command to send to running instance")
 )
 
 func setupLogging() {
@@ -96,9 +97,26 @@ func setupPidfile() (bool, error) {
 
 var log = logging.MustGetLogger("tcpdam")
 
+func checkCommand() {
+	if *command != "" {
+		if *ctrlSocket == "" {
+			log.Error("Need a control socket")
+			os.Exit(1)
+		}
+		err := tcpdam.SendControlCommand(*ctrlSocket, *command)
+		if err != nil {
+			log.Errorf("Error sending command : %s", err.Error())
+			os.Exit(1)
+		}
+		os.Exit(0)
+	}
+}
+
 func main() {
 	flag.Parse()
 	setupLogging()
+	checkCommand()
+
 	hasPid, err := setupPidfile()
 	if err != nil {
 		log.Errorf("Can't create pid file : %s\n", err.Error())

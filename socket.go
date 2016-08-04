@@ -47,16 +47,14 @@ func (dam *Dam) StartControlSocket(path string) {
 	}
 }
 
-func SendControlCommand(path string, cmd, arg []string) {
+func SendControlCommand(path string, command string) error {
 	conn, err := net.DialUnix("unix", nil,
 		&net.UnixAddr{Name: path, Net: "unix"})
 	if err != nil {
-		panic(err)
+		return err
 	}
+	defer conn.Close()
 
-	_, err = conn.Write([]byte("hello"))
-	if err != nil {
-		panic(err)
-	}
-	conn.Close()
+	_, err = conn.Write([]byte(command))
+	return err
 }
