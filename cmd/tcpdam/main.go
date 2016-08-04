@@ -48,7 +48,7 @@ var (
 	verbose            = flag.Bool("v", configFromEnvBool("TCPDAM_VERBOSE", false), "show major events like open/close (TCPDAM_VERBOSE)")
 	debug              = flag.Bool("d", configFromEnvBool("TCPDAM_DEBUG", false), "show all debug events (TCPDAM_DEBUG)")
 	pidFile            = flag.String("p", configFromEnv("TCPDAM_PIDFILE", ""), "pid file (TCPDAM_PIDFILE)")
-	ctrlSocket         = flag.String("ctrl-socket", configFromEnv("TCPDAM_CTRLSOCKET", ""), "control socket (TCPDAM_CTRLSOCKET)")
+	ctrlSocket         = flag.String("ctrl-socket", configFromEnv("TCPDAM_CTRLSOCKET", "tcpdam.sock"), "control socket (TCPDAM_CTRLSOCKET)")
 	open               = flag.Bool("open", configFromEnvBool("TCPDAM_OPEN", false), "start already open (TCPDAM_OPEN)")
 	command            = flag.String("c", "", "command to send to running instance")
 )
