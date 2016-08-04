@@ -48,6 +48,7 @@ var (
 	verbose            = flag.Bool("v", configFromEnvBool("TCPDAM_VERBOSE", false), "show major events like open/close (TCPDAM_VERBOSE)")
 	debug              = flag.Bool("d", configFromEnvBool("TCPDAM_DEBUG", false), "show all debug events (TCPDAM_DEBUG)")
 	pidFile            = flag.String("p", configFromEnv("TCPDAM_PIDFILE", ""), "pid file (TCPDAM_PIDFILE)")
+	ctrlSocket         = flag.String("ctrl-socket", configFromEnv("TCPDAM_CTRLSOCKET", ""), "control socket (TCPDAM_CTRLSOCKET)")
 	open               = flag.Bool("open", configFromEnvBool("TCPDAM_OPEN", false), "start already open (TCPDAM_OPEN)")
 )
 
@@ -110,6 +111,10 @@ func main() {
 	log.Noticef("tcpdam started (%s -> %s)", *listenAddr, *remoteAddr)
 	dam := tcpdam.NewDam(*listenAddr, *remoteAddr, *maxParkedProxies, *maxFlushingProxies)
 	dam.Logger = log
+	if *ctrlSocket != "" {
+		go dam.StartControlSocket(*ctrlSocket)
+		defer os.Remove(*ctrlSocket)
+	}
 	err = dam.Start(*open)
 	if err != nil {
 		log.Errorf("An error occured: %s", err.Error())

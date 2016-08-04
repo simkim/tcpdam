@@ -36,6 +36,14 @@ func NewDam(listenAddr string, remoteAddr string, maxParked int, maxFlushing int
 	}
 }
 
+func (dam *Dam) SetRemoteAddr(remoteAddr string) {
+	if dam.open {
+		dam.Logger.Warning("Changing remote address on open dam will not be effective until closing and reopening")
+	}
+	dam.remoteAddr = remoteAddr
+	dam.Logger.Infof("Remote address is now %s", remoteAddr)
+}
+
 func (dam *Dam) Dial() (*net.TCPConn, error) {
 	rconn, err := net.DialTCP("tcp", nil, dam.raddr)
 	if err != nil {

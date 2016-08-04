@@ -30,6 +30,7 @@ will re-close the dam and start to park new connections,
 * TCPDAM_DEBUG
 * TCPDAM_VERBOSE
 * TCPDAM_PIDFILE
+* TCPDAM_CTRLSOCKET
 * TCPDAM_MAX_FLUSHING
 * TCPDAM_MAX_PARKED
 * TCPDAM_OPEN
@@ -43,6 +44,7 @@ will re-close the dam and start to park new connections,
 * -max-parked
 * -max-flushing
 * -open
+* -ctrl-socket
 
 ## Limits
 
