@@ -38,8 +38,8 @@ will re-close the dam and start to park new connections,
 
 ### Remote Commands
 
-| Command | Description |
-| ------- | ----------- |
+| Command | Description |
+| ------- | ----------- |
 | open    | open the dam unless already open |
 | close   | close the dam unless already closed |
 | set-remote HOST:PORT | switch the remote address, will be used at the next open |
