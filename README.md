@@ -23,28 +23,26 @@ will lookup REMOTE-HOST once, and open the dam : the parked and new connections 
 will re-close the dam and start to park new connections,
 
 ## Configuration
+| Env | Command line | Description |
+| --- | ------------ | ----------- |
+| TCPDAM_LISTEN_ADDRESS | -l | Listen address for incoming connections |
+| TCPDAM_REMOTE_ADDRESS | -h | Remote address where the connections will be flushed |
+| TCPDAM_DEBUG | -d | Show all information |
+| TCPDAM_VERBOSE | -v | Show some information
+| TCPDAM_PIDFILE | -p | File which will contain the pid of the dam |
+| TCPDAM_CTRLSOCKET | -ctrl-socket | Unix socket to control the dam |
+| TCPDAM_MAX_FLUSHING | -max-flushing | Max number of open remote connections |
+| TCPDAM_MAX_PARKED | -max-parked | Max number of connections in the queue |
+| TCPDAM_OPEN | -open | Start the dam open |
+|   | -c | command to send to a running dam |
 
-### Environment variables
-* TCPDAM_LISTEN_ADDRESS
-* TCPDAM_REMOTE_ADDRESS
-* TCPDAM_DEBUG
-* TCPDAM_VERBOSE
-* TCPDAM_PIDFILE
-* TCPDAM_CTRLSOCKET
-* TCPDAM_MAX_FLUSHING
-* TCPDAM_MAX_PARKED
-* TCPDAM_OPEN
+### Remote Commands
 
-### Command line switch
-* -l
-* -h
-* -d
-* -v
-* -p
-* -max-parked
-* -max-flushing
-* -open
-* -ctrl-socket
+| Command | Description |
+| ------- | ----------- |
+| open    | open the dam unless already open |
+| close   | close the dam unless already closed |
+| set-remote HOST:PORT | switch the remote address, will be used at the next open |
 
 ## Limits
 
