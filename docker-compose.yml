@@ -1,5 +1,6 @@
 app:
   build: .
+  dockerfile: Dockerfile.run
   ports:
     - "9999:9999"
   ulimits:
