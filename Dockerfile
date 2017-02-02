@@ -1,7 +1,7 @@
-FROM joeshaw/busybox-nonroot
+FROM golang
 EXPOSE 9999
 
-COPY build/tcpdam /bin/tcpdam
+RUN go get -v github.com/simkim/tcpdam/...
 
 USER nobody
-CMD ["tcpdam"]
+ENTRYPOINT [ "tcpdam" ]
